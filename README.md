@@ -1,7 +1,8 @@
 # TreasuryAuction Data Analyzer
 This is useful because:
 * the official TreasuryDirect website does not readily provide detailed data on auctions for new and re-opened US debt securities
-* only the highest and lowest bids for the rate are shown and many fields are missing from API
+* only the highest and lowest bids for the rate are shown
+* API is missing many fields and only show 250; nowhere near all auctions
 * more important data such as the actual YTM determined by the auction are scattered throughout the website on interactive tables and PDF documents
 * hard to quickly summarize the auction participants' outlook on spot interest rates
 
