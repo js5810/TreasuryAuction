@@ -8,7 +8,8 @@ import pandas as pd
 import glob
 import requests
 from utils import *
-
+import plotly.graph_objects as go
+from datetime import datetime
 
 class TreasuryAuction:
 
@@ -61,58 +62,69 @@ class TreasuryAuction:
     def get_all_CUSIP(self) -> list[str]:
         """Extract all CUSIP of any debt security ever sold"""
         df = pd.read_csv("../data/combined_table.csv")
-        return [cusip for cusip in df["CUSIP"]]
+        return [cusip for cusip in df[df["Security Term"] == "10-Year"]["CUSIP"]]
 
 
-    def calculate_YTM(self, price: float, coupon_rate: float, maturity_days: float) -> float:
-        """Back-engineer the auction's Yield to Maturity from price, coupon rate, and time to maturity"""
-        return
+    def calculate_YTM(self, auction: dict) -> float:
+        """Back-engineer the auction's Yield to Maturity from price, coupon rate, and time to maturity given the price (per 100 USD)"""
+        security_type = auction["security_type"]
+        price = auction["price"]
+        coupon_rate = auction["coupon_rate"] / 100  # convert from percentage
+        payment_count = auction["payment_count"]
+        
+        if security_type == "Bill":
+            return
+        else:
+            return yield_bsta(coupon_rate, payment_count, price)
     
 
-    def auction_data(self, cusip: str) -> list[list[float]]:
+    def auction_data(self, cusip: str) -> dict[dict]:
         """Retrieve the price, coupon rate, and low/median/high bids for yield from all auctions that ever took place for this debt security"""
         user_agent = self.random_user_agent()
         headers = {
             "User-Agent": user_agent
         }
-        response_json = requests.get(url=f"https://www.treasurydirect.gov/TA_WS/securities/search?cusip={cusip}&callback=?&format=json", headers=headers).json()
+        TREASURY_URL = f"https://www.treasurydirect.gov/TA_WS/securities/search?cusip={cusip}&callback=?&format=json"
+        response_json = requests.get(url=TREASURY_URL, headers=headers).json()
         relevant_data = {}
         for auction in response_json:  # each dictionary object is a separate auction day
+            # non-negotiables:
             try:
+
+                if auction["tips"] == "Yes":
+                    return {}
+
                 auction_date = auction["auctionDate"]
-                relevant_data[auction_date] = {}
-            except ValueError as e:
-                continue
-            try:
+                security_type = auction["securityType"]
                 price_per_100 = float(auction["pricePer100"])
-                relevant_data[auction_date]["price"] = price_per_100
-            except ValueError as e:
-                continue
-            try:
                 coupon_rate = float(auction["interestRate"])  # treasury's API calls coupon rate the interest rate
-                relevant_data[auction_date]["coupon_rate"] = coupon_rate
+                payment_count = count_payments(auction["securityTerm"]) # compute how many payments you receive
+                print(auction_date, security_type, price_per_100, coupon_rate, payment_count)
+                print("clear")
             except ValueError as e:
                 continue
-            try:
-                maturity_days = auction["securityTerm"]
-                relevant_data[auction_date]["maturity"] = maturity_days
-            except ValueError as e:
-                continue
+            relevant_data[auction_date] = {}
+            relevant_data[auction_date]["security_type"] = security_type
+            relevant_data[auction_date]["price"] = price_per_100
+            relevant_data[auction_date]["coupon_rate"] = coupon_rate
+            relevant_data[auction_date]["payment_count"] = payment_count # dict containing time data
+
+            # acceptable if it's missing:
             try:
                 lowest_YTM = float(auction["lowYield"])
                 relevant_data[auction_date]["low_bid"] = lowest_YTM
             except ValueError as e:
-                continue
+                pass
             try:
                 highest_YTM = float(auction["highYield"])
                 relevant_data[auction_date]["high_bid"] = highest_YTM
             except ValueError as e:
-                continue
+                pass
             try:
                 median_YTM = float(auction["averageMedianYield"])
                 relevant_data[auction_date]["median_bid"] = median_YTM
             except ValueError as e:
-                continue
+                pass
 
         return relevant_data
 
@@ -120,7 +132,67 @@ class TreasuryAuction:
 
     def create_graph(self) -> float:
         cusip_list = self.get_all_CUSIP()
-        for cusip in cusip_list:
+        date_list = []
+        ytm_list = []
+        low_list = []
+        high_list = []
+        for cusip in cusip_list:  #cusip_list:
             all_auctions = self.auction_data(cusip)
-            for auction in all_auctions:
-                self.calculate_YTM
+            for auction_date in all_auctions:
+                a = all_auctions[auction_date] # dict containing data from specific auction
+                date_list.append(datetime.fromisoformat(auction_date))
+                low = a["low_bid"]
+                low_list.append(low)
+                high = a["high_bid"]
+                high_list.append(high)
+                ytm = self.calculate_YTM(a) * 100 # convert back to percent
+                if ytm < low:
+                    ytm = low
+                if ytm > high:
+                    ytm = high
+                ytm_list.append(ytm)
+
+        df = pd.DataFrame(data={"date": date_list, "ytm": ytm_list, "low": low_list, "high": high_list})
+        df.sort_values(by=['date'], inplace=True)
+        df.reset_index(inplace=True, drop=True)
+        print(df)
+
+        market_df = pd.read_csv("../data/DGS10.csv")
+        market_df["DATE"] = market_df["DATE"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d"))
+
+        fig = go.Figure([
+            go.Scatter(name="Final Yield",
+                       x=df["date"],
+                       y=(df["low"]+df["high"])/2,
+                       mode="lines",
+                       line=dict(color='rgb(31, 119, 180)')),
+            go.Scatter(name="lower bound",
+                       x=df["date"],
+                       y=df["low"],
+                       marker=dict(color="#444"),
+                       line=dict(width=0),
+                       mode='lines',
+                       fillcolor='rgba(68, 68, 68, 0.3)',
+                       fill='tonexty'),
+            go.Scatter(name="upper bound",
+                       x=df["date"],
+                       y=df["high"],
+                       marker=dict(color="#444"),
+                       line=dict(width=0),
+                       mode='lines',
+                       fillcolor='rgba(68, 68, 68, 0.3)',
+                       fill='tonexty'),
+            go.Scatter(
+                name="Market Yield",
+                x=market_df["DATE"],
+                y=market_df["DGS10"],
+                mode="lines",
+                line=dict(color='rgb(255,69,0)'))
+        ])
+        
+        fig.update_layout(title=f"Auction Participant's Demand for Yield Over Time",
+                      title_x=0.5,
+                      xaxis_title="Time",
+                      yaxis_title=f"Yield To Maturity",
+                      legend_title="Tickers")
+        fig.show()
