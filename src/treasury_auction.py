@@ -59,11 +59,10 @@ class TreasuryAuction:
         combined_df.dropna(subset="Price per $100", inplace=True)
         #combined_df.to_csv("combined_data.csv", index=False)
     
-    def get_all_CUSIP(self) -> list[str]:
+    def get_all_CUSIP(self, term: str) -> list[str]:
         """Extract all CUSIP of any debt security ever sold"""
         df = pd.read_csv("../data/combined_table.csv")
-        return [cusip for cusip in df[df["Security Term"] == "10-Year"]["CUSIP"]]
-
+        return [cusip for cusip in df[df["Security Term"] == term]["CUSIP"]]  # still need to distinugish TIPS
 
     def calculate_YTM(self, auction: dict) -> float:
         """Back-engineer the auction's Yield to Maturity from price, coupon rate, and time to maturity given the price (per 100 USD)"""
@@ -77,8 +76,7 @@ class TreasuryAuction:
         else:
             return yield_bsta(coupon_rate, payment_count, price)
     
-
-    def auction_data(self, cusip: str) -> dict[dict]:
+    def auction_data(self, cusip: str, tips: str) -> dict[dict]:
         """Retrieve the price, coupon rate, and low/median/high bids for yield from all auctions that ever took place for this debt security"""
         user_agent = self.random_user_agent()
         headers = {
@@ -90,10 +88,8 @@ class TreasuryAuction:
         for auction in response_json:  # each dictionary object is a separate auction day
             # non-negotiables:
             try:
-
-                if auction["tips"] == "Yes":
+                if auction["tips"] != tips:
                     return {}
-
                 auction_date = auction["auctionDate"]
                 security_type = auction["securityType"]
                 price_per_100 = float(auction["pricePer100"])
@@ -128,16 +124,15 @@ class TreasuryAuction:
 
         return relevant_data
 
-            
-
-    def create_graph(self) -> float:
-        cusip_list = self.get_all_CUSIP()
+    def create_graph(self, term: str, tips: str) -> float:
+        """Make a time series of yield for the term (10-Year, 30-Year, etc.) and tips (Yes or No)"""
+        cusip_list = self.get_all_CUSIP(term)
         date_list = []
         ytm_list = []
         low_list = []
         high_list = []
-        for cusip in cusip_list:  #cusip_list:
-            all_auctions = self.auction_data(cusip)
+        for cusip in cusip_list:
+            all_auctions = self.auction_data(cusip, tips)
             for auction_date in all_auctions:
                 a = all_auctions[auction_date] # dict containing data from specific auction
                 date_list.append(datetime.fromisoformat(auction_date))
@@ -157,13 +152,10 @@ class TreasuryAuction:
         df.reset_index(inplace=True, drop=True)
         print(df)
 
-        market_df = pd.read_csv("../data/DGS10.csv")
-        market_df["DATE"] = market_df["DATE"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d"))
-
-        fig = go.Figure([
-            go.Scatter(name="Final Yield",
+        lines_list = [
+            go.Scatter(name="Auction Yield",
                        x=df["date"],
-                       y=(df["low"]+df["high"])/2,
+                       y=df["ytm"],
                        mode="lines",
                        line=dict(color='rgb(31, 119, 180)')),
             go.Scatter(name="lower bound",
@@ -181,15 +173,12 @@ class TreasuryAuction:
                        line=dict(width=0),
                        mode='lines',
                        fillcolor='rgba(68, 68, 68, 0.3)',
-                       fill='tonexty'),
-            go.Scatter(
-                name="Market Yield",
-                x=market_df["DATE"],
-                y=market_df["DGS10"],
-                mode="lines",
-                line=dict(color='rgb(255,69,0)'))
-        ])
-        
+                       fill='tonexty')
+        ]
+
+        lines_list = market_yield_added(lines_list, tips)
+
+        fig = go.Figure(lines_list)
         fig.update_layout(title=f"Auction Participant's Demand for Yield Over Time",
                       title_x=0.5,
                       xaxis_title="Time",
