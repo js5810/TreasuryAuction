@@ -6,7 +6,8 @@ This is useful because:
 * the official TreasuryDirect website does not readily provide detailed data on auctions for new and re-opened US debt securities
 * API is missing many fields and only show 250; nowhere near all auctions
 * more important data such as the actual YTM determined by the auction are scattered throughout the website on interactive tables and PDF documents
-* hard to quickly summarize the auction participants' confidence on spot interest rates
+* you can quickly see that the range of bids is larger when there is uncertainty about the yield (COVID 2020-2021)
+* the range has also widened between 10Y note auctions on July 10th and August 7th, 2024 due to uncertainty caused by higher unemployment rates shortly after the Fed kept rates constant for July 2024 as well as the unwinding of Yen carry trades following BOJ's rate hike
 
 This program:
 * automatically gathers the latest auction results of US treasury bills, notes, and bonds and creates useful visualizations
