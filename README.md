@@ -1,4 +1,7 @@
 # TreasuryAuction Data Analyzer
+
+![alt text](https://github.com/js5810/TreasuryAuction/blob/main/metadata/Treasury_Auction_Demo.gif)
+
 This is useful because:
 * the official TreasuryDirect website does not readily provide detailed data on auctions for new and re-opened US debt securities
 * only the highest and lowest bids for the rate are shown

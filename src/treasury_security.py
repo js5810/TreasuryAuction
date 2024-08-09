@@ -58,7 +58,7 @@ class TreasurySecurity:
     
     def get_all_CUSIP(self, term: str) -> list[str]:
         """Extract all CUSIP of any debt security ever sold"""
-        df = pd.read_csv("../data/combined_table.csv")
+        df = pd.read_csv("../data/combined_auction_data.csv")
         return [cusip for cusip in df[df["Security Term"] == term]["CUSIP"]]  # still need to distinugish TIPS
 
     def calculate_YTM(self, auction: dict) -> float:

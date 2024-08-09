@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go
 from utils import *
-import plotly.graph_objects as go
 
 class TreasuryBill(TreasurySecurity):
     def __init__(self, term: str):
@@ -62,7 +61,7 @@ class TreasuryBill(TreasurySecurity):
         #    "13-Week": ,
         #    "26-Week": 
         #}
-        market_df = pd.read_csv("../data/DGS10.csv")
+        market_df = pd.read_csv("../data/FRED_data/DGS10.csv")
         market_df["DATE"] = market_df["DATE"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d"))
         fig_list.append(go.Scatter(name="Secondary Market Yield",
                     x=market_df["DATE"],
@@ -103,7 +102,7 @@ class TreasuryBill(TreasurySecurity):
                     y=df["ytm"],
                     mode="lines",
                     line=dict(color='rgb(31, 119, 180)')),
-            go.Candlestick(name="Low/High Auction Yields",
+            go.Candlestick(name="Range of Yield Bids",
                         x=df["date"],
                         low=df["low"],
                         high=df["high"],
@@ -115,7 +114,7 @@ class TreasuryBill(TreasurySecurity):
         lines_list = self.market_yield_added(lines_list)
 
         fig = go.Figure(lines_list)
-        fig.update_layout(title=f"Auction Participant's Demand for Yield Over Time",
+        fig.update_layout(title=f"Auction Participant's Confidence in Yield Over Time ({self.term})",
                     title_x=0.5,
                     xaxis_title="Time",
                     yaxis_title=f"Yield (%)",
