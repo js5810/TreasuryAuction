@@ -22,6 +22,7 @@ class TreasuryNoteBond(TreasurySecurity):
         }
         TREASURY_URL = f"https://www.treasurydirect.gov/TA_WS/securities/search?cusip={cusip}&callback=?&format=json"
         response_json = requests.get(url=TREASURY_URL, headers=headers).json()
+
         relevant_data = {}
         for auction in response_json:  # each dictionary object is a separate auction day
             # non-negotiables:
@@ -66,10 +67,14 @@ class TreasuryNoteBond(TreasurySecurity):
         """Add graph for the secondary market yield which is just from FRED"""
         DATA_DICT = {
             "Yes": {
-                "10-Year": "DFII10"
+                "10-Year": "DFII10",
+                "20-Year": "DFII20",
+                "30-Year": "DFII30"
             },
             "No": {
-                "10-Year": "DGS10"
+                "10-Year": "DGS10",
+                "20-Year": "DGS20",
+                "30-Year": "DGS30"
             }
         }
         filename = DATA_DICT[self.tips][self.term]
@@ -110,7 +115,6 @@ class TreasuryNoteBond(TreasurySecurity):
         df = pd.DataFrame(data={"date": date_list, "ytm": ytm_list, "low": low_list, "high": high_list})
         df.sort_values(by=['date'], inplace=True)
         df.reset_index(inplace=True, drop=True)
-        print(df)
 
         lines_list = [
             go.Scatter(name="Auction Yield",

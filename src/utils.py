@@ -1,15 +1,10 @@
 import re
-import pandas as pd
-from datetime import datetime
-import plotly.graph_objects as go
 
 
 def price_for_yield(c: float, p: float, r: float) -> float:
     """For coupon paying notes/bonds: given the YTM, compute the present value (price) of the note/bond"""
     FACE_VALUE = 100
     return 0.99*((FACE_VALUE/2 * c) * ( (1-pow(1/(1+r), 0.5*p))/(pow(1+r, 0.5)-1) ) + FACE_VALUE/pow(1+r, 0.5*p))
-    
-    #return (FACE_VALUE * c) * ( (1-pow(1/(1+0.5*r), p))/(r) ) + FACE_VALUE/pow(1+0.5*r, p)
 
 
 def yield_bsta(coupon_rate, payment_count, target_price):
@@ -46,4 +41,9 @@ def count_payments(term_string: str, is_bill: bool) -> int:
         return 365*times["Year"] + 31*times["Month"] + 7*times["Week"] + times["Day"]
     else:
         return 2*times["Year"] + (times["Month"] // 6)
-    
+
+
+def yield_from_discount(discount_rate: float, num_days: int) -> float:
+    """For bills: given discount rate (just something TreasuryDirect uses) return yield"""
+    price_per_100 = 100 * (1 - (discount_rate * num_days / 365))
+    return (pow(100/price_per_100, 365 / num_days) - 1) * 100

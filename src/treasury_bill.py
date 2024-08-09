@@ -11,9 +11,10 @@ class TreasuryBill(TreasurySecurity):
         self.term = term
     
     def calculate_YTM(self, auction: dict) -> float:
-        """Back-engineer the auction's Yield to Maturity from price per 100 and time to maturity"""
-        price = auction["price"]
-        return 
+        """Solve for the auction's Yield to Maturity from price per 100 and time to maturity"""
+        price_per_100 = auction["price"]
+        num_days = auction["days_to_maturity"]
+        return pow(100/price_per_100, 365 / num_days) - 1
 
     def auction_data(self, cusip: str) -> dict[dict]:
         """Get all auctions for bill with this cusip"""
@@ -23,6 +24,7 @@ class TreasuryBill(TreasurySecurity):
         }
         TREASURY_URL = f"https://www.treasurydirect.gov/TA_WS/securities/search?cusip={cusip}&callback=?&format=json"
         response_json = requests.get(url=TREASURY_URL, headers=headers).json()
+
         relevant_data = {}
         for auction in response_json:  # each dictionary object is a separate auction day
             # non-negotiables:
@@ -37,21 +39,19 @@ class TreasuryBill(TreasurySecurity):
             relevant_data[auction_date] = {}
             relevant_data[auction_date]["security_type"] = security_type
             relevant_data[auction_date]["price"] = price_per_100
+            relevant_data[auction_date]["days_to_maturity"] = num_days
 
             # acceptable if it's missing:
             try:
-                lowest_YTM = float(auction["lowYield"])
-                relevant_data[auction_date]["low_bid"] = lowest_YTM
+                low_discount = float(auction["lowDiscountRate"]) / 100  # convert from percent
+                low_yield = yield_from_discount(low_discount, num_days)
+                relevant_data[auction_date]["low_bid"] = low_yield
             except ValueError as e:
                 pass
             try:
-                highest_YTM = float(auction["highYield"])
-                relevant_data[auction_date]["high_bid"] = highest_YTM
-            except ValueError as e:
-                pass
-            try:
-                median_YTM = float(auction["averageMedianYield"])
-                relevant_data[auction_date]["median_bid"] = median_YTM
+                high_discount = float(auction["highDiscountRate"]) / 100  # convert from percent
+                high_yield = yield_from_discount(high_discount, num_days)
+                relevant_data[auction_date]["high_bid"] = high_yield
             except ValueError as e:
                 pass
 
@@ -96,7 +96,6 @@ class TreasuryBill(TreasurySecurity):
         df = pd.DataFrame(data={"date": date_list, "ytm": ytm_list, "low": low_list, "high": high_list})
         df.sort_values(by=['date'], inplace=True)
         df.reset_index(inplace=True, drop=True)
-        print(df)
 
         lines_list = [
             go.Scatter(name="Auction Yield",
