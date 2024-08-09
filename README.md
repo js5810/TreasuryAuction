@@ -4,16 +4,15 @@
 
 This is useful because:
 * the official TreasuryDirect website does not readily provide detailed data on auctions for new and re-opened US debt securities
-* only the highest and lowest bids for the rate are shown
 * API is missing many fields and only show 250; nowhere near all auctions
 * more important data such as the actual YTM determined by the auction are scattered throughout the website on interactive tables and PDF documents
-* hard to quickly summarize the auction participants' outlook on spot interest rates
+* hard to quickly summarize the auction participants' confidence on spot interest rates
 
 This program:
 * automatically gathers the latest auction results of US treasury bills, notes, and bonds and creates useful visualizations
-* constantly checks for any new auction data and will produce a visual report as soon as the most recent auction is posted
+* constantly checks for any new auction data and will produce an interactive graph as soon as the most recent auction is posted
 
-In short, the program taps into auctions as a new way of gauging market participants' outlook on interest rates which can be helpful to consider in conjunction with the actual yield curve which is derived from the prices of the treasury instruments trading in the open market.
+In short, the program taps into auctions as a new way of gauging market participants' confidence on interest rates which can be helpful to consider in conjunction with the actual yield curve which is derived from the prices of the treasury instruments trading in the secondary market.
 
 ## How New Treasury Bills, Notes, and Bonds are Issued
 The Department of the Treasury issues new debt securities by offering them for an auction in which anyone can submit bids for the yield to maturity (YTM) that they are willing to accept. Thus, these YTM bids are what the participants are demanding as a rate of return for purchasing the treasury bond. One can also submit non-competitive bids which indicates that the person is willing to take any YTM and just wants to buy the desired dollar amount. The actual YTM which in turn gives the price of the bond is the lowest rate that can sell all the bonds that were being offered. For instance, there was an auction for US treasury notes with 7 years to maturity (CUSIP 91282CHJ3) where &#36;35B worth was offered. The full auction details are at https://www.treasurydirect.gov/instit/annceresult/press/preanre/2023/A_20230622_7.pdf 
