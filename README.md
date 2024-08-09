@@ -24,4 +24,4 @@ Now that we know how these auctions work, we can reverse engineer the auction ma
 
 $$\text{price} = \Bigg(\sum_{k=1}^{T}\frac{C}{(1+r)^k}\Bigg) + \frac{F}{(1+r)^T}$$
 
-This is a $k$th order polynomial that can be solved with Python.
+This is a kth degree polynomial that can be solved with Python. In practice, the code actually uses the the monotonicity of the function to find the solution by empirically trying yields until the correct price is reached using a techinique called Binary Seach the Answer (BSTA). We start with a range in which the yield is contained and keep narrowing it down until we get the yield that would produce the security price per $100. This is much faster than trying to solve the kth degree polynomial and requires much less computation since it leverages binary search.
