@@ -3,6 +3,7 @@
 ![alt text](https://github.com/js5810/TreasuryAuction/blob/main/metadata/Treasury_Auction_Demo.gif)
 
 This is useful because:
+* the distribution of bids from each auction contains useful information about investor confidence in interest rates that isn't captured by the single secondary market treasury yield value that investors usually look at
 * the official TreasuryDirect website does not readily provide detailed data on auctions for new and re-opened US debt securities
 * API is missing many fields and only show 250; nowhere near all auctions
 * more important data such as the actual YTM determined by the auction are scattered throughout the website on interactive tables and PDF documents
@@ -10,7 +11,7 @@ This is useful because:
 * the range has also widened between 10Y note auctions on July 10th and August 7th, 2024 due to uncertainty caused by higher unemployment statistics released shortly after the Fed decided to keep rates constant for July 2024 as well as the unwinding of Yen carry trades following BOJ's rate hike
 
 This program:
-* automatically gathers the latest auction results of US treasury bills, notes, and bonds and creates useful visualizations
+* automatically gathers the latest auction results of US treasury bills, notes, and bonds and creates visualizations that show the distribution of bids beyond the single yield number
 * constantly checks for any new auction data and will produce an interactive graph as soon as the most recent auction is posted
 
 In short, the program taps into auctions as a new way of gauging market participants' confidence on interest rates which can be helpful to consider in conjunction with the actual yield curve which is derived from the prices of the treasury instruments trading in the secondary market.
@@ -35,5 +36,8 @@ $$P\cdot r(1+r)^{T}-C\cdot[(1+r)^{T}-1]-F\cdot r=0$$
 
 This is a T-th degree polynomial and not (T+1)-th degree because the constant term from $(1+r)^T-1$ is zero and we can divide through by r as the rate must be positive. This polynomial can be solved analytically or with the help of Python. In practice, my code actually uses the the monotonicity of the function to find the solution by empirically trying yields until the correct price is reached using a techinique called Binary Seach the Answer (BSTA). The fact that the pricing formula is strictly decreasing is intuitive because we know higher yield means lower bond price. Due to the way we moved terms around to get the polynomial, the polynomial itself is strictly increasing. We can verify this by taking the derivative of the polynomial and seeing it is positive for all yield values $r\in (0, 1)$. To do BSTA, we start with an initial range of (0, 1) and keep narrowing it down until we get the yield that would produce the observed security price per $100. This is much faster than solving the T-th degree polynomial and requires much less computation since it leverages binary search.
 
-## Adding Distribution of Bids
-Additional summary statistics including min, max, and median values of the distribution of bids that the auction participants submitted are also visualized in the graph. They are shown as vertical bars that contain the actual bid for yield that the auction ultimately resulted in. Wider bars signify less confidence on the rate and the relative position of the actual bid on the bar conveys how skewed the bids were. The visualization also overlays the secondary market yield graph in orange which is what investors usually look at. We can see that the graphs from auctions and the secondary market are almost identical with the auction yields appearing to be slightly lower on average. This can be attributed to the sealed nature of the auction which might cause participants to overpay slightly. However, the secondary market may have more friction if buying larger quantities so the effects essentially cancel out.
+## Visualizing the Distribution of Bids
+Additional summary statistics including min, max, and median values of the distribution of bids that the auction participants submitted are also visualized in the graph. They are shown as vertical bars that contain the actual bid for yield that the auction ultimately resulted in. Wider bars signify less confidence on the rate and the relative position of the actual bid on the bar conveys how skewed the bids were. The color of the bars signify whether the resulting yield was lower or higher than the previous auction.
+
+## Verifying Accuracy by Comparing to Secondary Market Yield
+The visualization overlays the secondary market yield graph in orange which is what investors usually look at. We can see that the graphs from auctions and the secondary market are almost identical with the auction yields appearing to be slightly lower on average. This can be attributed to the sealed nature of the auction which might cause participants to overpay slightly. However, the secondary market may have more friction if buying larger quantities so the effects essentially cancel out.
