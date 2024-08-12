@@ -9,7 +9,7 @@ import glob
 from utils import *
 
 class TreasurySecurity:
-
+    """Skeleton class that the note/bond and bill classes inherit"""
     def __init__(self):
         pass
 
@@ -62,16 +62,17 @@ class TreasurySecurity:
         return [cusip for cusip in df[df["Security Term"] == term]["CUSIP"]]  # still need to distinugish TIPS
 
     def calculate_YTM(self, auction: dict) -> float:
-        """Back-engineer the auction's Yield to Maturity from price, different formula for bills vs notes/bonds"""
+        """Implemented by each child class: Back-engineer the auction's Yield to Maturity from price, different formula for bills vs notes/bonds"""
         return
     
     def auction_data(self) -> dict[dict]:
-        """Return info on all auctions that ever took place for this security"""
+        """Implemented by each child class: Return info on all auctions that ever took place for this security"""
         return
 
     def market_yield_added(self) -> list:
+        """Implemented by each child class"""
         return
 
     def create_graph(self) -> None:
-        """Make a graph of yield for a specific term (10-Year, 30-Year, etc.)"""
+        """Implemented by each child class: Make a graph of yield for a specific term (10-Year, 30-Year, etc.)"""
         return
