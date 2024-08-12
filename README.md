@@ -27,10 +27,10 @@ $$\text{price} = \Bigg(\sum_{k=1}^{T}\frac{C}{(1+r)^k}\Bigg) + \frac{F}{(1+r)^T}
 
 Since treasury sercurities are risk-free, we do not need to account for default risk. Thus, we have a sum of terms of a geometric sequence which we can simplify as 
 
-$$C\cdot\frac{1-\frac{1}{(1+r)^T}}{r}+\frac{F}{(1+r)^T}$$
+$$C\cdot\Bigg(\frac{1-\frac{1}{(1+r)^T}}{r}\Bigg)+\frac{F}{(1+r)^T}$$
 
 Suppose the price per $100 is given by the Dept. of Treasury to be P. Then solving the equation boils down to a T-th degree polynomial.
 
-$$C\cdot\frac{1-\frac{1}{(1+r)^T}}{r}+\frac{F}{(1+r)^T}=P$$
+$$P\cdot r(1+r)^{T}-C\cdot((1+r)^{T}-1)-F\cdot r=0$$
 
- This polynomial can be solved analytically or with the help of Python. In practice, my code actually uses the the monotonicity of the function to find the solution by empirically trying yields until the correct price is reached using a techinique called Binary Seach the Answer (BSTA). We start with a range in which the yield is contained and keep narrowing it down until we get the yield that would produce the observed security price per $100. This is much faster than solving the T-th degree polynomial and requires much less computation since it leverages binary search. The fact that the pricing formula is strictly decreasing is intuitive because we know higher yield means lower bond price. We can verify this by taking the derivative of the polynomial and seeing it is negative for all yields r.
+This is a T-th degree polynomial and not (T+1)-th degree because the constant term from $(1+r)^T-1$ is zero which means we can divide through by r as the rate must be positive. This polynomial can be solved analytically or with the help of Python. In practice, my code actually uses the the monotonicity of the function to find the solution by empirically trying yields until the correct price is reached using a techinique called Binary Seach the Answer (BSTA). We start with a range in which the yield is contained and keep narrowing it down until we get the yield that would produce the observed security price per $100. This is much faster than solving the T-th degree polynomial and requires much less computation since it leverages binary search. The fact that the pricing formula is strictly decreasing is intuitive because we know higher yield means lower bond price. We can verify this by taking the derivative of the polynomial and seeing it is negative for all yields r.
