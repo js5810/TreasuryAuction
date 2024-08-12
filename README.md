@@ -1,4 +1,4 @@
-# TreasuryAuction Data Analyzer
+# Visualizing Treasury Auction Bid Distributions
 
 ![alt text](https://github.com/js5810/TreasuryAuction/blob/main/metadata/Treasury_Auction_Demo.gif)
 
