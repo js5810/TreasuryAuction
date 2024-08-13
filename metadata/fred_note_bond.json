@@ -1,0 +1,22 @@
+{
+    "Yes": {
+        "1-Year": "DFII1",
+        "2-Year": "DFII2",
+        "3-Year": "DFII3",
+        "5-Year": "DFII5",
+        "7-Year": "DFII7",
+        "10-Year": "DFII10",
+        "20-Year": "DFII20",
+        "30-Year": "DFII30"
+    },
+    "No": {
+        "1-Year": "DGS1",
+        "2-Year": "DGS2",
+        "3-Year": "DGS3",
+        "5-Year": "DGS5",
+        "7-Year": "DGS7",
+        "10-Year": "DGS10",
+        "20-Year": "DGS20",
+        "30-Year": "DGS30"
+    }
+}

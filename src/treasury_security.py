@@ -70,7 +70,7 @@ class TreasurySecurity:
         return
 
     def market_yield_added(self) -> list:
-        """Implemented by each child class"""
+        """Implemented by each child class: Add graph for the secondary market yield which is just from FRED"""
         return
 
     def create_graph(self) -> None:

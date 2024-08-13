@@ -1,6 +1,7 @@
 from treasury_security import TreasurySecurity
 import requests
 import pandas as pd
+import json
 from datetime import datetime
 import plotly.graph_objects as go
 from utils import *
@@ -68,26 +69,17 @@ class TreasuryNoteBond(TreasurySecurity):
 
     def market_yield_added(self, fig_list: list) -> list:
         """Add graph for the secondary market yield which is just from FRED"""
-        DATA_DICT = {
-            "Yes": {
-                "10-Year": "DFII10",
-                "20-Year": "DFII20",
-                "30-Year": "DFII30"
-            },
-            "No": {
-                "10-Year": "DGS10",
-                "20-Year": "DGS20",
-                "30-Year": "DGS30"
-            }
-        }
-        filename = DATA_DICT[self.tips][self.term]
+        FRED_FILE = "../metadata/fred_note_bond.json"
+        with open(FRED_FILE, encoding='utf-8', mode='r') as file:  # encoding parameter for windows machines
+            FRED_DICT = json.load(file)
+        filename = FRED_DICT[self.tips][self.term]
         market_df = pd.read_csv(f"../data/FRED_data/{filename}.csv")
         market_df["DATE"] = market_df["DATE"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d"))
         fig_list.append(go.Scatter(name="Secondary Market Yield",
                     x=market_df["DATE"],
                     y=market_df[filename],
                     mode="lines",
-                    line=dict(color='rgb(255,69,0)')))
+                    line=dict(color='rgb(255,70,0)')))
         return fig_list
 
 
